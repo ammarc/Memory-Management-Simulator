@@ -6,6 +6,7 @@
  */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <assert.h>
 #include "list.h"
 
@@ -13,7 +14,8 @@ typedef struct node Node;
 
 // a list node points to the next node in the list, and to some data
 struct node {
-	Node *next;
+	Node *prev;
+    Node *next;
 	int time_created;
     int process_id;
     int memory_size;
@@ -90,7 +92,10 @@ void list_add_start(List *list, int in_array[])
     node->process_id = in_array[1];
     node->memory_size = in_array[2];
     node->job_time = in_array[3];
-	node->next = list->head; // next will be the old first node (may be null)
+	node->next = list->head;
+    node->prev = NULL;
+    list->head->prev = node;
+     // next will be the old first node (may be null)
 
 	// place it at the start of the list
 	list->head = node;
@@ -113,20 +118,30 @@ void list_add_end(List *list, int in_array[]) {
 	Node *node = new_node();
 	node->time_created = in_array[0];
     node->process_id = in_array[1];
+ 
     node->memory_size = in_array[2];
+    
     node->job_time = in_array[3];
-	node->next = NULL; // as the last node, there's no next node
+   
+	node->next = NULL;
+    //node->prev = list->last;
+    // as the last node, there's no next node
 
 	if(list->size == 0) {
 		// if the list was empty, new node is now the first node
 		list->head = node;
+        list->head->prev = NULL;
+        
 	} else {
 		// otherwise, it goes after the current last node
 		list->last->next = node;
+        node->prev = list->last;
 	}
 	
 	// place this new node at the end of the list
 	list->last = node;
+
+
 	
 	// and keep size updated too
 	list->size++;
@@ -138,6 +153,8 @@ void list_add_end(List *list, int in_array[]) {
 int* list_remove_start(List *list) {
 	assert(list != NULL);
 	assert(list->size > 0);
+
+    
 	
 	// we'll need to save the data to return it
 	Node *start_node = list->head;
@@ -148,17 +165,30 @@ int* list_remove_start(List *list) {
     list_data[2] = start_node->memory_size;
     list_data[3] = start_node->job_time;
 		
+    
 	// then replace the head with its next node (may be null)
+    //list->head->next->prev = NULL; 
+    // fprintf(stderr, "Sax = %d", list->head->process_id);
+    
+    fprintf(stderr, "Good uptill now\n");
 	list->head = list->head->next;
+    
+    // list->head->prev = NULL;
+    
 
 	// if this was the last node in the list, the last also needs to be cleared
-	if(list->size == 1) {
+	if(list->size == 1)
+    {
 		list->last = NULL;
 	}
+    else
+    {
+        list->head->prev = NULL;
+    }
 
 	// the list is now one node smaller
 	list->size--;
-
+    
 	// and we're finished with the node holding this data
 	free_node(start_node);
 
@@ -187,6 +217,7 @@ int* list_remove_end(List *list) {
 	// then replace the last with the second-last node (may be null)
 	// (to find this replacement, we'll need to walk the list --- the O(n) bit
 	Node *node = list->head;
+
 	Node *prev = NULL;
 	while (node->next) {
 		prev = node;
