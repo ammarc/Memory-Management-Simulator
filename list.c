@@ -172,7 +172,10 @@ int* list_remove_start(List *list) {
     
     fprintf(stderr, "Good uptill now\n");
 	list->head = list->head->next;
-    
+
+
+
+
     // list->head->prev = NULL;
     
 

@@ -28,7 +28,6 @@ int main(int argc, char** argv)
 				input_file = fopen (optarg, "r");
 				while (fscanf(input_file, "%d %d %d %d", line, line+1, line+2, line+3)!=EOF)
 				{
-					fprintf(stderr, "Now adding time %d\n", line[0]);
 					list_add_end(process_to_run, line);
 				}
  				break;
@@ -59,7 +58,7 @@ int main(int argc, char** argv)
 	int curr_list_length = list_size(process_to_run);
 	for (int i = 0; i < curr_list_length; i++)
 	{
-		fprintf(stderr, "%d\n", *(int *)list_remove_start(process_to_run));
+		fprintf(stderr, "\n%d\n", *(int *)list_remove_start(process_to_run));
 	}
 	fprintf(stderr, "......................\n");
 	
