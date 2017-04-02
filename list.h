@@ -24,21 +24,21 @@ void free_list(List *list);
 
 // add an element to the front of a list
 // this operation is O(1)
-void list_add_start(List *list, int in_array[]);
+void list_add_start(List *list, void* data);
 
 // add an element to the back of a list
 // this operation is O(1)
-void list_add_end(List *list, int in_array[]);
+void list_add_end(List *list, void* data);
 
 // remove and return the front data element from a list
 // this operation is O(1)
 // error if the list is empty (so first ensure list_size() > 0)
-int* list_remove_start(List *list);
+void* list_remove_start(List *list);
 
 // remove and return the final data element in a list
 // this operation is O(n), where n is the number of elements in the list
 // error if the list is empty (so first ensure list_size() > 0)
-int* list_remove_end(List *list);
+void* list_remove_end(List *list);
 
 // return the number of elements contained in a list
 int list_size(List *list);

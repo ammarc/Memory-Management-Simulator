@@ -6,8 +6,17 @@
 
 extern char *optarg;
 
+typedef struct process_data
+{
+	int time_created;
+	int process_id;
+	int memory_size;
+	int job_time;
+} Process;
+
 int main(int argc, char** argv)
 {
+	int time = 0;
 	char input;
 	char* algorithm_name;
 	int memsize;
@@ -15,20 +24,26 @@ int main(int argc, char** argv)
 	FILE* input_file;
 	List* process_to_run = new_list();
 	
-	fprintf(stderr, "\n");
-	fprintf(stderr, "Starting program...\n");
+	fprintf(stderr, "\nStarting program...\n\n");
 
 	while ((input = getopt(argc, argv, "f:a:m:q:")) != EOF)
 	{
-		// remove magic number
-		int line[4];
+		Process* process_data_input = malloc(sizeof(Process));
+
 		switch (input)
 		{
 			case 'f':
 				input_file = fopen (optarg, "r");
-				while (fscanf(input_file, "%d %d %d %d", line, line+1, line+2, line+3)!=EOF)
+				while (fscanf(input_file, "%d %d %d %d", &process_data_input->time_created, 
+												&process_data_input->process_id, 
+												&process_data_input->memory_size, 
+												&process_data_input->job_time)!=EOF)
 				{
-					list_add_end(process_to_run, line);
+					fprintf(stderr, "Your struct is stored at: %p\n", process_data_input);
+					list_add_end(process_to_run, process_data_input);
+					// Now that a node in the list points to this struct
+					// we need to allocate a different chunk of memory
+					process_data_input = malloc(sizeof(Process));
 				}
  				break;
            
@@ -51,22 +66,29 @@ int main(int argc, char** argv)
 				// do something
 				break;
 		}
+
+		free (process_data_input);
 	}
 
 	
-	fprintf(stderr, "Now printing the list:\n");
+	fprintf(stderr, "\nNow printing the list:\n");
 	int curr_list_length = list_size(process_to_run);
 	for (int i = 0; i < curr_list_length; i++)
 	{
-		fprintf(stderr, "\n%d\n", *(int *)list_remove_start(process_to_run));
+		fprintf(stderr, "Process time is: %d\n", * (int *) list_remove_start(process_to_run));
 	}
-	fprintf(stderr, "......................\n");
-	
-
-	// list_fprint(NULL, stderr, process_to_run);
+	fprintf(stderr, "......................\n\n");
 
 
 	fprintf(stderr, "Applying algorithm: %s\n", algorithm_name);
 	fprintf (stderr, "The memsize is: %d\n", memsize);
 	fprintf (stderr, "The quantum is: %d\n", quantum);
+
+	// let us add a while loop
+	while (!list_is_empty(process_to_run))
+	{
+		// take it out from the list
+		
+		time++;
+	}
 }

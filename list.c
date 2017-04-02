@@ -14,12 +14,9 @@ typedef struct node Node;
 
 // a list node points to the next node in the list, and to some data
 struct node {
-	Node *prev;
-    Node *next;
-	int time_created;
-    int process_id;
-    int memory_size;
-    int job_time;
+	Node* next;
+	Node* prev;
+    void* data;
 };
 
 // a list points to its first and last nodes, and stores its size (num. nodes)
@@ -68,7 +65,8 @@ void free_list(List *list) {
 }
 
 // helper function to create a new node and return its address
-Node *new_node() {
+Node *new_node()
+{
 	Node *node = malloc(sizeof *node);
 	assert(node);
 	
@@ -76,63 +74,80 @@ Node *new_node() {
 }
 
 // helper function to clear memory of a node
-void free_node(Node *node) {
+void free_node(Node *node)
+{
 	free(node);
 }
 
 // add an element to the front of a list
 // this operation is O(1)
-void list_add_start(List *list, int in_array[])
+/*
+void list_add_start(List *list, void* data)
 {
 	assert(list);
-
+    
 	// create and initialise a new list node
 	Node *node = new_node();
-	node->time_created = in_array[0];
-    node->process_id = in_array[1];
-    node->memory_size = in_array[2];
-    node->job_time = in_array[3];
+    
+	node->data = data;
+
 	node->next = list->head;
+    
     node->prev = NULL;
-    list->head->prev = node;
-     // next will be the old first node (may be null)
+    
+    // if the list is empty then add a new node to the head
+    if (list->head == NULL)
+    {
+        list->head = new_node();
+    }
+
+    // seg fault down here:
+    // fprintf(stderr, "Head's prev is: %p\n\n", list->head);
+    // list->head->prev = node;
+    // fprintf(stderr, "Good uptill now ...\n\n");
+    // next will be the old first node (may be null)
 
 	// place it at the start of the list
 	list->head = node;
 
 	// if list was empty, this new node is also the last node now
-	if(list->size == 0) {
+    // modified for the doubly linked list
+	if(list->size == 0)
+    {
 		list->last = node;
 	}
+    else
+    {
+        list->head->prev = node;
+    }
 
 	// and we need to keep size updated!
 	list->size++;
 }
+*/
 
 // add an element to the back of a list
 // this operation is O(1)
-void list_add_end(List *list, int in_array[]) {
+void list_add_end(List* list, void* data)
+{
 	assert(list != NULL);
-	
-	// we'll need a new list node to store this data
-	Node *node = new_node();
-	node->time_created = in_array[0];
-    node->process_id = in_array[1];
- 
-    node->memory_size = in_array[2];
-    
-    node->job_time = in_array[3];
-   
-	node->next = NULL;
-    //node->prev = list->last;
-    // as the last node, there's no next node
 
-	if(list->size == 0) {
+	// we'll need a new list node to store this data
+	Node* node = new_node();
+
+	node->data = data;
+	node->next = NULL;  // as the last node, there's no next node
+    //node->prev = list->last;
+    
+
+	if(list->size == 0)
+    {
 		// if the list was empty, new node is now the first node
 		list->head = node;
         list->head->prev = NULL;
-        
-	} else {
+	}
+    else
+    {
 		// otherwise, it goes after the current last node
 		list->last->next = node;
         node->prev = list->last;
@@ -140,8 +155,6 @@ void list_add_end(List *list, int in_array[]) {
 	
 	// place this new node at the end of the list
 	list->last = node;
-
-
 	
 	// and keep size updated too
 	list->size++;
@@ -150,33 +163,19 @@ void list_add_end(List *list, int in_array[]) {
 // remove and return the front data element from a list
 // this operation is O(1)
 // error if the list is empty (so first ensure list_size() > 0)
-int* list_remove_start(List *list) {
+void* list_remove_start(List *list)
+{
 	assert(list != NULL);
 	assert(list->size > 0);
-
-    
 	
-	// we'll need to save the data to return it
+    // we'll need to save the data to return it
 	Node *start_node = list->head;
-	int *list_data = malloc(sizeof(int) * 4);
+	// int *list_data = malloc(sizeof(int) * 4);
+    void* list_data = malloc(sizeof(list->head->data));
 	
-	list_data[0] = start_node->time_created;
-    list_data[1] = start_node->process_id;
-    list_data[2] = start_node->memory_size;
-    list_data[3] = start_node->job_time;
-		
-    
-	// then replace the head with its next node (may be null)
-    //list->head->next->prev = NULL; 
-    // fprintf(stderr, "Sax = %d", list->head->process_id);
-    
-    fprintf(stderr, "Good uptill now\n");
+	list_data = list->head->data;
+
 	list->head = list->head->next;
-
-
-
-
-    // list->head->prev = NULL;
     
 
 	// if this was the last node in the list, the last also needs to be cleared
@@ -202,20 +201,19 @@ int* list_remove_start(List *list) {
 // remove and return the final data element in a list
 // this operation is O(n), where n is the number of elements in the list
 // error if the list is empty (so first ensure list_size() > 0)
-int* list_remove_end(List *list) {
+/*
+void* list_remove_end(List *list)
+{
 	assert(list != NULL);
 	assert(list->size > 0);
 
     // making a variable to store int array to return
-    int *list_data = malloc(sizeof(int) * 4);
+    void* list_data = malloc(sizeof(list->last->data));;
 	
 	// we'll need to save the data to return it
 	Node *end_node = list->last;
 
-	list_data[0] = end_node->time_created;
-    list_data[1] = end_node->process_id;
-    list_data[2] = end_node->memory_size;
-    list_data[3] = end_node->job_time;
+	list_data = end_node->data;
 	
 	// then replace the last with the second-last node (may be null)
 	// (to find this replacement, we'll need to walk the list --- the O(n) bit
@@ -245,7 +243,7 @@ int* list_remove_end(List *list) {
 	// done!
 	return list_data;
 }
-
+*/
 // return the number of elements contained in a list
 int list_size(List *list) {
 	assert(list != NULL);
