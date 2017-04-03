@@ -1,23 +1,31 @@
-/* ¡Add username and info on all files (see spec)!
+/* Made by Ammar
 */
 
-#include "simulation.h"
+#include "prime.h"
 #include "list.h"
 
 extern char *optarg;
 
+typedef struct process_data
+{
+	int time_created;
+	int process_id;
+	int memory_size;
+	int job_time;
+} Process;
+
 int main(int argc, char** argv)
 {
+	int time = 0;
 	char input;
 	char* algorithm_name;
-	int mem_size;
+	int memsize;
 	int quantum;
 	FILE* input_file;
-	List* processes_to_run = new_list();
+	List* process_to_run = new_list();
 	
 	fprintf(stderr, "\nStarting program...\n\n");
 
-	// make this into a new function:
 	while ((input = getopt(argc, argv, "f:a:m:q:")) != EOF)
 	{
 		Process* process_data_input = malloc(sizeof(Process));
@@ -31,7 +39,8 @@ int main(int argc, char** argv)
 												&process_data_input->memory_size, 
 												&process_data_input->job_time)!=EOF)
 				{
-					list_add_end(processes_to_run, process_data_input);
+					fprintf(stderr, "Your struct is stored at: %p\n", process_data_input);
+					list_add_end(process_to_run, process_data_input);
 					// Now that a node in the list points to this struct
 					// we need to allocate a different chunk of memory
 					process_data_input = malloc(sizeof(Process));
@@ -45,7 +54,7 @@ int main(int argc, char** argv)
 
 			case 'm':
 				// set the value of size (int value) based on optarg
-				mem_size = atoi(optarg);
+				memsize = atoi(optarg);
 				break;
 
 			case 'q':
@@ -61,11 +70,25 @@ int main(int argc, char** argv)
 		free (process_data_input);
 	}
 
+	
+	fprintf(stderr, "\nNow printing the list:\n");
+	int curr_list_length = list_size(process_to_run);
+	for (int i = 0; i < curr_list_length; i++)
+	{
+		fprintf(stderr, "Process time is: %d\n", * (int *) list_remove_start(process_to_run));
+	}
+	fprintf(stderr, "......................\n\n");
+
+
 	fprintf(stderr, "Applying algorithm: %s\n", algorithm_name);
-	fprintf (stderr, "The mem_size is: %d\n", mem_size);
+	fprintf (stderr, "The memsize is: %d\n", memsize);
 	fprintf (stderr, "The quantum is: %d\n", quantum);
 
-	run_simulation (processes_to_run, mem_size, quantum);
-
-	fprintf(stderr, "\nEnding program...\n\n");
+	// let us add a while loop
+	while (!list_is_empty(process_to_run))
+	{
+		// take it out from the list
+		
+		time++;
+	}
 }

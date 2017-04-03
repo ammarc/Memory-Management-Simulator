@@ -9,9 +9,22 @@
 #include <stdio.h>
 #include <assert.h>
 #include "list.h"
-#include "simulation.h"
 
+typedef struct node Node;
 
+// a list node points to the next node in the list, and to some data
+struct node {
+	Node* next;
+	Node* prev;
+    void* data;
+};
+
+// a list points to its first and last nodes, and stores its size (num. nodes)
+struct list {
+	Node *head;
+	Node *last;
+	int size;
+};
 
 // helper function to create a new node and return its address
 Node *new_node();
@@ -52,9 +65,9 @@ void free_list(List *list) {
 }
 
 // helper function to create a new node and return its address
-Node* new_node()
+Node *new_node()
 {
-	Node* node = malloc(sizeof *node);
+	Node *node = malloc(sizeof *node);
 	assert(node);
 	
 	return node;
@@ -80,7 +93,7 @@ void list_add_start(List *list, void* data)
 
 	node->next = list->head;
     
-    node->back = NULL;
+    node->prev = NULL;
     
     // if the list is empty then add a new node to the head
     if (list->head == NULL)
@@ -89,8 +102,8 @@ void list_add_start(List *list, void* data)
     }
 
     // seg fault down here:
-    // fprintf(stderr, "Head's back is: %p\n\n", list->head);
-    // list->head->back = node;
+    // fprintf(stderr, "Head's prev is: %p\n\n", list->head);
+    // list->head->prev = node;
     // fprintf(stderr, "Good uptill now ...\n\n");
     // next will be the old first node (may be null)
 
@@ -105,7 +118,7 @@ void list_add_start(List *list, void* data)
 	}
     else
     {
-        list->head->back = node;
+        list->head->prev = node;
     }
 
 	// and we need to keep size updated!
@@ -124,20 +137,20 @@ void list_add_end(List* list, void* data)
 
 	node->data = data;
 	node->next = NULL;  // as the last node, there's no next node
-    //node->back = list->last;
+    //node->prev = list->last;
     
 
 	if(list->size == 0)
     {
 		// if the list was empty, new node is now the first node
 		list->head = node;
-        list->head->back = NULL;
+        list->head->prev = NULL;
 	}
     else
     {
 		// otherwise, it goes after the current last node
 		list->last->next = node;
-        node->back = list->last;
+        node->prev = list->last;
 	}
 	
 	// place this new node at the end of the list
@@ -172,7 +185,7 @@ void* list_remove_start(List *list)
 	}
     else
     {
-        list->head->back = NULL;
+        list->head->prev = NULL;
     }
 
 	// the list is now one node smaller
@@ -206,19 +219,19 @@ void* list_remove_end(List *list)
 	// (to find this replacement, we'll need to walk the list --- the O(n) bit
 	Node *node = list->head;
 
-	Node *back = NULL;
+	Node *prev = NULL;
 	while (node->next) {
-		back = node;
+		prev = node;
 		node = node->next;
 	}
-	list->last = back;
+	list->last = prev;
 	
 	if(list->size == 1) {
 		// if we're removing the last node, the head also needs clearing
 		list->head = NULL;
 	} else {
 		// otherwise, the second-last node needs to drop the removed last node
-		back->next = NULL;
+		prev->next = NULL;
 	}
 
 	// the list just got one element shorter
@@ -241,25 +254,4 @@ int list_size(List *list) {
 bool list_is_empty(List *list) {
 	assert(list != NULL);
 	return (list->size==0);
-}
-
-
-/* Code for removing all the nodes from the list and printing them
-fprintf(stderr, "\nNow printing the list:\n");
-int curr_list_length = list_size(processes_to_run);
-for (int i = 0; i < curr_list_length; i++)
-{
-	fprintf(stderr, "Process time is: %d\n", * (int *) list_remove_start(processes_to_run));
-}
-fprintf(stderr, "......................\n\n");
-*/
-
-/* Printing the list */
-void list_print (Node* head)
-{
-    if (head)
-	{
-        fprintf(stderr, "The arrival time of the process is: %d\n", ((Process *) head->data)->time_created);
-        list_print(head->next);
-    }
 }

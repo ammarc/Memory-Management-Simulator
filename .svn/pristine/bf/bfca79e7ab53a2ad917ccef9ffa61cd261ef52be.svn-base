@@ -16,22 +16,6 @@
 
 typedef struct list List;
 
-typedef struct node Node;
-
-// a list node points to the next node in the list, and to some data
-struct node {
-	Node* next;
-	Node* back;
-    void* data;
-};
-
-// a list points to its first and last nodes, and stores its size (num. nodes)
-struct list {
-	Node *head;
-	Node *last;
-	int size;
-};
-
 // create a new list and return its pointer
 List *new_list();
 
@@ -61,8 +45,5 @@ int list_size(List *list);
 
 // returns whether the list contains no elements (true) or some elements (false)
 bool list_is_empty(List *list);
-
-// function to print the list
-void list_print (Node* head);
 
 #endif
