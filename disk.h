@@ -5,8 +5,8 @@
 #include "list.h"
 #include "simulation.h"
 
-void add_to_disk (List* in_disk, void* process, int curr_time);
+void add_to_disk (List* in_disk, Process* process, int curr_time);
 
-Process* remove_from_disk (List* in_data);
+void* remove_from_disk (List* in_data);
 
 #endif

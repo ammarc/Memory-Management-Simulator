@@ -260,7 +260,14 @@ void list_print (Node* head)
 {
     if (head)
 	{
-        fprintf(stderr, "The arrival time of the process is: %d\n", ((Process *) head->data)->time_created);
+        fprintf(stderr, "The PID of the process is: %d\n", ((Process *) head->data)->process_id);
         list_print(head->next);
     }
 }
+
+/*
+void delete_node (List* list, int p_id)
+{
+	// search from head and compare PID
+}
+*/

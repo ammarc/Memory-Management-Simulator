@@ -14,7 +14,7 @@ typedef struct process_data
 	int memory_size;
 	int job_time;
 	int time_remaining;
-	int memory_location;
+	int memory_address;
 	int disk_entry_time;
 	int memory_entry_time;
 } Process;
