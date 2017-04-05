@@ -52,10 +52,10 @@ void add_to_memory (Memory* memory, void* process, int curr_time, List* in_disk,
 int is_space_available (Memory* memory, int process_size);
 
 // the function to swap processes out of memory
-void* swap (Memory* memory, int curr_time);
+Process* process_to_remove (Memory* memory, int curr_time);
 
 // this function removes the given process from memory
-void remove_from_memory (Memory* memory, void* process, List* round_robin_queue);
+void remove_from_memory (Memory* memory, Process* process, List* round_robin_queue);
 
 // Implement: a function that fetches the next process
 void* fetch_process ();

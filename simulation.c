@@ -40,6 +40,7 @@ void run_simulation (List* process_list, int mem_size, int quantum)
 		
 		curr_time++;
 	}
+	fprintf (stdout, "time %d, simulation finished", curr_time);
 }
 
 void process_copy (Process* src, Process* dest)
