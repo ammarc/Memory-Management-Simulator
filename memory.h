@@ -54,10 +54,12 @@ int is_space_available (Memory* memory, int process_size);
 // the function to swap processes out of memory
 void* swap (Memory* memory, int curr_time);
 
-// this function removes the given process from memory and the round robin queue
-void remove_from_memory (Memory* memory, List* round_robin_queue, void* process);
+// this function removes the given process from memory
+void remove_from_memory (Memory* memory, void* process);
 
 // Implement: a function that fetches the next process
 void* fetch_process ();
+
+void insert_at_address (Memory* memory, int address, Process* process);
 
 #endif

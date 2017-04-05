@@ -26,6 +26,7 @@ Memory* create_new_memory (int mem_size)
     block->process = NULL;
 
     memory->head = block;
+    memory->last = block;
 
     return memory;
 }
@@ -54,7 +55,7 @@ void add_to_memory (Memory* memory, void* process, int curr_time, List* in_disk)
         to_be_removed = swap (memory, curr_time);
         // take the process out from R.R.
         // take the process out from memory segments and update the boolean
-        remove_from_memory (memory, round_robin_queue, to_be_removed);
+        remove_from_memory (memory, to_be_removed);
         // transfer to the disk
         add_to_disk (in_disk, to_be_removed, curr_time);
         // print the swapped out process
@@ -68,8 +69,8 @@ void add_to_memory (Memory* memory, void* process, int curr_time, List* in_disk)
     // set the address of the process
     ((Process *)process)->memory_address = address;
 
-    // WRONG:
-    // list_add_end(memory, process);
+    // insert the process to the address calculated
+    insert_at_address (memory, address, process);
 
     // fprintf(stderr, "Time is: %d\n", curr_time);
     // list_print (memory->head);
@@ -159,5 +160,49 @@ void remove_from_memory (Memory* memory, List* round_robin_queue, void* process)
             // l
         }
         block =  block->next;
+    }
+
+    // update the attributes of the memory as well, like size occupied
+}
+
+void insert_at_address (Memory* memory, int address, Process* process)
+{
+    Block* block = memory->head;
+
+    while (block)
+    {
+        if (block->address == address)
+        {
+            if (block->size > process->memory_size)
+            {
+                // split the free space and make a new block
+                Block* new_block = malloc (sizeof(Block));
+                new_block->next = block->next;
+                block->next = new_block;
+                new_block->back = block;
+                new_block->size = block->size - process->memory_size;
+                new_block->is_empty = true;
+                new_block->address = address - process->memory_size;
+
+                block->size = process->memory_size;
+
+                // check whether the block was the last one
+                if (memory->last == block)
+                {
+                    memory->last = new_block;
+                }
+            }
+            block->is_empty = false;
+            block->process = process;
+
+            memory->size_occupied += process->memory_size;
+            memory->num_processes += 1;
+
+            if (block->size == process->memory_size)
+            {
+                memory->num_holes -= 1;
+            }
+        }
+        block = block->next;
     }
 }
