@@ -21,4 +21,6 @@ typedef struct process_data
 
 void run_simulation (List* process_list, int mem_size, int quantum);
 
+void process_copy (Process* src, Process* dest);
+
 #endif

@@ -62,4 +62,6 @@ void* fetch_process ();
 
 void insert_at_address (Memory* memory, int address, Process* process, List* round_robin_queue);
 
+void memory_print (Block* head);
+
 #endif

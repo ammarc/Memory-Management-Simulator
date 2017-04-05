@@ -63,7 +63,7 @@ int main(int argc, char** argv)
 
 	fprintf(stderr, "Applying algorithm: %s\n", algorithm_name);
 	fprintf (stderr, "The mem_size is: %d\n", mem_size);
-	fprintf (stderr, "The quantum is: %d\n", quantum);
+	fprintf (stderr, "The quantum is: %d\n\n\n", quantum);
 
 	run_simulation (processes_to_run, mem_size, quantum);
 

@@ -10,8 +10,9 @@
 Memory* create_new_memory (int mem_size)
 {
     // Setting the default values for memory
+    fprintf(stderr, "Creating new memory\n");
     Memory* memory = malloc (sizeof(Memory));
-    memory->total_size = mem_size;
+    memory->total_size = mem_size - 1;
     memory->num_holes = 1;
     memory->num_processes = 0;
     memory->size_occupied = 0;
@@ -47,11 +48,14 @@ void add_to_memory (Memory* memory, void* process, int curr_time, List* in_disk,
 {
     int address;
     Process* to_be_removed;
+    double mem_usage;
+
     
     // keep going unless a big enough space is available
     while (!(address = is_space_available(memory, ((Process *)process)->memory_size)))
     {
         // call the swap function here
+        
         to_be_removed = swap (memory, curr_time);
         // take the process out from R.R.
         // take the process out from memory segments and update the boolean
@@ -59,6 +63,7 @@ void add_to_memory (Memory* memory, void* process, int curr_time, List* in_disk,
         // transfer to the disk
         add_to_disk (in_disk, to_be_removed, curr_time);
         // print the swapped out process
+        
     }
     
 
@@ -68,18 +73,18 @@ void add_to_memory (Memory* memory, void* process, int curr_time, List* in_disk,
 
     // set the address of the process
     ((Process *)process)->memory_address = address;
-
+    
     // insert the process to the address calculated
+    
     insert_at_address (memory, address, process, round_robin_queue);
 
     // fprintf(stderr, "Time is: %d\n", curr_time);
-    // list_print (memory->head);
-
-    /* WRONG (print the process swapped in, not out)
+    // memory_print (memory->head);
+    fprintf(stderr, "\n\n");
+    mem_usage = memory->size_occupied*1.0/memory->total_size*1.0;
     fprintf (stdout, "time %d, %d loaded, numprocesses=%d, numholes=%d, memusage=%d%%\n",
-                    curr_time, longest_process_in_mem->process_id, memory->total_size, 
-                            memory->total_size, (int) ceil(mem_usage*100));
-    */
+                    curr_time, ((Process *)process)->process_id, memory->num_processes, 
+                            memory->num_holes, (int) ceil(mem_usage*100));
 }
 
 
@@ -87,6 +92,7 @@ void add_to_memory (Memory* memory, void* process, int curr_time, List* in_disk,
 // a modified version of next-fit is shown below
 int is_space_available (Memory* memory, int process_size)
 {
+
     Block* block = memory->head;
 
     while (block)
@@ -107,7 +113,6 @@ void* swap (Memory* memory, int curr_time)
     int highest_priority = INT_MAX;
     Process* longest_process_in_mem;
     Block* block = memory->head;
-    double mem_usage;
 
     while (block)
     {
@@ -141,9 +146,6 @@ void* swap (Memory* memory, int curr_time)
     // update the memory segments and the round robin
 
 
-    mem_usage = memory->size_occupied*1.0/memory->total_size*1.0;
-
-
     return longest_process_in_mem;
 }
 
@@ -151,10 +153,11 @@ void remove_from_memory (Memory* memory, void* process, List* round_robin_queue)
 {
     int pid = ((Process *) process)->process_id;
     Block* block = memory->head;
+    int length = memory->num_holes + memory->num_processes;
 
+    
     // first let us remove the process from the memory segment list
     // scan the entire list for the process with pid
-
     while (block)
     {
         if (((Process *)block)->process_id == pid)
@@ -200,15 +203,21 @@ void remove_from_memory (Memory* memory, void* process, List* round_robin_queue)
                 free (block->next);
             }
         }
-        block =  block->next;
+        block = block->next;
+        length--;
     }
+
+    // removing from the round robin queue (not sure of this)
+    list_remove_start (round_robin_queue);
 }
 
 void insert_at_address (Memory* memory, int address, Process* process, List* round_robin_queue)
 {
     Block* block = memory->head;
-
-    while (block)
+    int length = memory->num_holes + memory->num_processes;
+    fprintf (stderr, "Adding at address %d\n", address);
+    
+    while (length > 0)
     {
         if (block->address == address)
         {
@@ -232,7 +241,12 @@ void insert_at_address (Memory* memory, int address, Process* process, List* rou
                 }
             }
             block->is_empty = false;
+
+            // process_copy (process, my_process);
+
             block->process = process;
+
+            
 
             memory->size_occupied += process->memory_size;
             memory->num_processes += 1;
@@ -243,7 +257,20 @@ void insert_at_address (Memory* memory, int address, Process* process, List* rou
             }
         }
         block = block->next;
+        fprintf(stderr, "The length is %d\n", length);
+        length--;
     }
 
     list_add_end (round_robin_queue, process);
+}
+
+/* Printing the memory list */
+void memory_print (Block* head)
+{
+    if (head)
+	{
+        if (head->process) { fprintf (stderr, "HEAD FOUND\n"); }
+        fprintf(stderr, "The PID of the process is: %d\n", ((Block *)head)->process->process_id);
+        memory_print(head->next);
+    }
 }
