@@ -43,7 +43,7 @@ bool memory_is_full (Memory* memory);
 bool memory_is_empty (Memory* memory);
 
 // adds a process to memory
-void add_to_memory (Memory* memory, void* process, int curr_time, List* in_disk);
+void add_to_memory (Memory* memory, void* process, int curr_time, List* in_disk, List* round_robin_queue);
 
 // returns a free hole
 // Block* hole_to_insert (Memory* memory, int process_size);
@@ -55,11 +55,11 @@ int is_space_available (Memory* memory, int process_size);
 void* swap (Memory* memory, int curr_time);
 
 // this function removes the given process from memory
-void remove_from_memory (Memory* memory, void* process);
+void remove_from_memory (Memory* memory, void* process, List* round_robin_queue);
 
 // Implement: a function that fetches the next process
 void* fetch_process ();
 
-void insert_at_address (Memory* memory, int address, Process* process);
+void insert_at_address (Memory* memory, int address, Process* process, List* round_robin_queue);
 
 #endif

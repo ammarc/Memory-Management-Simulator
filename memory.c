@@ -43,7 +43,7 @@ bool memory_is_empty (Memory* memory)
 
 // given a process, it will be added to the memory
 // (if there isn't enough space, it will be made by swapping)
-void add_to_memory (Memory* memory, void* process, int curr_time, List* in_disk)
+void add_to_memory (Memory* memory, void* process, int curr_time, List* in_disk, List* round_robin_queue)
 {
     int address;
     Process* to_be_removed;
@@ -55,7 +55,7 @@ void add_to_memory (Memory* memory, void* process, int curr_time, List* in_disk)
         to_be_removed = swap (memory, curr_time);
         // take the process out from R.R.
         // take the process out from memory segments and update the boolean
-        remove_from_memory (memory, to_be_removed);
+        remove_from_memory (memory, to_be_removed, round_robin_queue);
         // transfer to the disk
         add_to_disk (in_disk, to_be_removed, curr_time);
         // print the swapped out process
@@ -70,10 +70,16 @@ void add_to_memory (Memory* memory, void* process, int curr_time, List* in_disk)
     ((Process *)process)->memory_address = address;
 
     // insert the process to the address calculated
-    insert_at_address (memory, address, process);
+    insert_at_address (memory, address, process, round_robin_queue);
 
     // fprintf(stderr, "Time is: %d\n", curr_time);
     // list_print (memory->head);
+
+    /* WRONG (print the process swapped in, not out)
+    fprintf (stdout, "time %d, %d loaded, numprocesses=%d, numholes=%d, memusage=%d%%\n",
+                    curr_time, longest_process_in_mem->process_id, memory->total_size, 
+                            memory->total_size, (int) ceil(mem_usage*100));
+    */
 }
 
 
@@ -137,14 +143,11 @@ void* swap (Memory* memory, int curr_time)
 
     mem_usage = memory->size_occupied*1.0/memory->total_size*1.0;
 
-    // WRONG (print the process swapped in, not out)
-    fprintf (stdout, "time %d, %d loaded, numprocesses=%d, numholes=%d, memusage=%d%%\n",
-                    curr_time, longest_process_in_mem->process_id, memory->total_size, 
-                            memory->total_size, (int) ceil(mem_usage*100));
+
     return longest_process_in_mem;
 }
 
-void remove_from_memory (Memory* memory, List* round_robin_queue, void* process)
+void remove_from_memory (Memory* memory, void* process, List* round_robin_queue)
 {
     int pid = ((Process *) process)->process_id;
     Block* block = memory->head;
@@ -152,20 +155,56 @@ void remove_from_memory (Memory* memory, List* round_robin_queue, void* process)
     // first let us remove the process from the memory segment list
     // scan the entire list for the process with pid
 
-    // NULL EVERYTHING
     while (block)
     {
         if (((Process *)block)->process_id == pid)
         {
-            // l
+            block->is_empty = true;
+            block->process = NULL;
+
+            memory->size_occupied -= ((Process *) process)->memory_size;
+            memory->num_holes += 1;
+            memory->num_processes += 1;            
+
+            // merge with back node
+            if (block->back && block->back->is_empty)
+            {
+                block->address = block->back->address;
+                block->size += block->back->size;
+                block->back = block->back->back;
+
+                memory->num_holes -= 1;
+                // checking for the last
+                if (memory->last == block->back)
+                {
+                    memory->last = block;
+                }
+
+                // free the back node as well
+                free (block->back);
+            }
+
+            // merge with the next node
+            if (block->next && block->next->is_empty)
+            {
+                block->size += block->next->size;
+                block->next = block->next->next;
+
+                memory->num_holes -= 1;
+                // checking for the head
+                if (memory->head == block->next)
+                {
+                    memory->head = block;
+                }
+                // free the next node as well
+                free (block->next);
+            }
         }
         block =  block->next;
     }
-
-    // update the attributes of the memory as well, like size occupied
 }
 
-void insert_at_address (Memory* memory, int address, Process* process)
+void insert_at_address (Memory* memory, int address, Process* process, List* round_robin_queue)
 {
     Block* block = memory->head;
 
@@ -205,4 +244,6 @@ void insert_at_address (Memory* memory, int address, Process* process)
         }
         block = block->next;
     }
+
+    list_add_end (round_robin_queue, process);
 }

@@ -8,7 +8,7 @@ void run_simulation (List* process_list, int mem_size, int quantum)
 {
     int curr_time = 0;
 	List* in_disk = new_list();
-	// List* round_robin_queue = new_list();
+	List* round_robin_queue = new_list();
 
 	Memory* memory = create_new_memory (mem_size);
 
