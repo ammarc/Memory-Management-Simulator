@@ -43,6 +43,7 @@ void run_simulation (List* process_list, int mem_size, int quantum)
 	fprintf (stdout, "time %d, simulation finished", curr_time);
 }
 
+/*
 void process_copy (Process* src, Process* dest)
 {
 	dest->time_created = src->time_created;
@@ -54,3 +55,4 @@ void process_copy (Process* src, Process* dest)
 	dest->disk_entry_time = src->disk_entry_time;
 	dest->memory_entry_time = src->memory_entry_time;
 }
+*/
