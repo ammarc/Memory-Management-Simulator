@@ -6,23 +6,33 @@
 #include "list.h"
 #include "simulation.h"
 
-typedef struct memory
+
+typedef struct block Block;
+typedef struct memory Memory;
+
+// Memory is our self-defined list to apply the round robin queue
+// and the free holes list
+struct memory
 {
     int total_size;
     int size_occupied;
     int num_processes;
     int num_holes;
-    List* memory;
-} Memory;
+    Block* head;
+    Block* last;
+};
 
 // a structure for a hole in memory
-typedef struct block
+struct block
 {
     // location is the end of the address
     int address;
     int size;
     bool is_empty;
-} Block;
+    Block* next;
+    Block* back;
+    Process* process;
+};
 
 // creates a new memory and assigns the default values to it
 Memory* create_new_memory (int mem_size);
@@ -30,16 +40,24 @@ Memory* create_new_memory (int mem_size);
 // checks whether the memory is at capacity
 bool memory_is_full (Memory* memory);
 
+bool memory_is_empty (Memory* memory);
+
 // adds a process to memory
-void add_to_memory (Memory* memory, void* process, int curr_time);
+void add_to_memory (Memory* memory, void* process, int curr_time, List* in_disk);
 
 // returns a free hole
 // Block* hole_to_insert (Memory* memory, int process_size);
 
-// checks the free holes list for whether the input space in available
-// int is_hole_available (List* free_holes, int process_size);
+// checks the memory segments list for contiguous space as the input
+int is_space_available (Memory* memory, int process_size);
 
 // the function to swap processes out of memory
-// void swap (List* round_robin, int curr_time, Memory* memory);
+void* swap (Memory* memory, int curr_time);
+
+// this function removes the given process from memory and the round robin queue
+void remove_from_memory (Memory* memory, List* round_robin_queue, void* process);
+
+// Implement: a function that fetches the next process
+void* fetch_process ();
 
 #endif
