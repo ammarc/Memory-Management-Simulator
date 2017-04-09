@@ -1,23 +1,22 @@
-#include <stdio.h>
-#include "list.h"
 #include "simulation.h"
-#include "memory.h"
-#include "disk.h"
 
-void run_simulation (List* process_list, int mem_size, int quantum)
+void run_simulation (List* process_list, int mem_size, int quantum, char* algorithm)
 {
     int curr_time = 0;
 	List* in_disk = new_list();
+	int jump_time;
 	List* round_robin_queue = new_list();
+	Process* process_to_deque = NULL;
 
 	Memory* memory = create_new_memory (mem_size);
 
 	// while the process is not empty and etc
 	// check for the case that the last process is being processed
-	// while (!list_is_empty(process_list) || !memory_is_empty(memory))
+	while (!memory_is_empty(memory) || !list_is_empty (in_disk) || !list_is_empty(process_list))
 	// change this:
-	while (curr_time < 100)
+	// while (curr_time < 120)
 	{
+		fprintf(stderr, "\n***************************************************\n");
 		Process* curr_process;
 
 		// take out the processes from the input list and put them on disk
@@ -28,31 +27,55 @@ void run_simulation (List* process_list, int mem_size, int quantum)
 			add_to_disk (in_disk, curr_process, curr_time);
 		}
 
-		// fprintf(stderr, "Time is: %d\n", curr_time);
-		// list_print(in_disk->head);
-
-		// now we need to select a process from the disk and put it in the memory
-		// fprintf (stderr, ":-----------PID-----------: %d\n", ((Process *)in_disk->head->data)->process_id);
-		// curr_process = remove_from_disk (in_disk);
-		// fprintf (stderr, ":-----------PID-----------: %d\n", curr_process->process_id);
 		if (!list_is_empty (in_disk))
-			add_to_memory (memory, remove_from_disk (in_disk), curr_time, in_disk, round_robin_queue);
-		
-		curr_time++;
+			add_to_memory (memory, remove_from_disk (in_disk), curr_time, in_disk, round_robin_queue, algorithm);
+
+		// what if taken out of memory
+		if (process_to_deque && process_in_memory (memory, process_to_deque->process_id))
+		{
+			// put the process at the end of the round robin
+			list_add_end (round_robin_queue, list_remove_start (round_robin_queue));
+			process_to_deque = NULL;
+		}
+		// fprintf (stderr, ":-----------PID-----------:\n");
+		// this will happen in the case that time_remaining <= quantum
+		if (!list_is_empty(round_robin_queue))
+			jump_time = ((Process *)round_robin_queue->head->data)->time_remaining;
+		else
+			// then only jump by 1
+			jump_time = 1;
+		// fprintf(stderr, "The jump time is %d\n", jump_time);
+		//if (!list_is_empty(round_robin_queue) && (process_to_deque = run_process (round_robin_queue, quantum, memory)))
+		//	jump_time = quantum;
+		if ((process_to_deque = run_process (round_robin_queue, quantum, memory)))
+			jump_time = quantum;
+		// if (!list_is_empty(round_robin_queue))
+		//	remove_from_memory (memory, (Process *) round_robin_queue->head->data, round_robin_queue);
+		// jump_time = quantum;
+		curr_time += jump_time;
+		fprintf(stderr, "\n***************************************************\n");
 	}
-	fprintf (stdout, "time %d, simulation finished", curr_time);
+
+	fprintf (stdout, "time %d, simulation finished.\n", curr_time);
 }
 
-/*
-void process_copy (Process* src, Process* dest)
+Process* run_process (List* round_robin_queue, int quantum, Memory* memory)
 {
-	dest->time_created = src->time_created;
-	dest->process_id = src->process_id;
-	dest->memory_size = src->memory_size;
-	dest->job_time = src->job_time;
-	dest->time_remaining = src->time_remaining;
-	dest->memory_address = src->memory_address;
-	dest->disk_entry_time = src->disk_entry_time;
-	dest->memory_entry_time = src->memory_entry_time;
+	if (list_is_empty(round_robin_queue))
+		return NULL;
+	fprintf(stderr, "Head of q: %d\n", ((Process *)round_robin_queue->head->data)->process_id);
+	Process* process_to_run = round_robin_queue->head->data;
+	if ( process_to_run->time_remaining - quantum > 0)
+	{
+		process_to_run->time_remaining -= quantum;
+		fprintf(stderr, "\nRunning process: %d\nTime left for process %d: %d\n", process_to_run->process_id, process_to_run->time_remaining, process_to_run->process_id);
+		return process_to_run;
+	}
+	else
+	{
+		// delete the process from the round robin and also the memory
+		remove_from_memory (memory, process_to_run, round_robin_queue);
+		free (process_to_run);
+	}
+	return NULL;
 }
-*/

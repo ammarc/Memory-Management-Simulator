@@ -29,8 +29,9 @@ int main(int argc, char** argv)
 				while (fscanf(input_file, "%d %d %d %d", &process_data_input->time_created, 
 												&process_data_input->process_id, 
 												&process_data_input->memory_size, 
-												&process_data_input->job_time)!=EOF)
+												&process_data_input->time_remaining)!=EOF)
 				{
+					process_data_input->added_to_disk = false;
 					list_add_end(processes_to_run, process_data_input);
 					// Now that a node in the list points to this struct
 					// we need to allocate a different chunk of memory
@@ -65,7 +66,7 @@ int main(int argc, char** argv)
 	fprintf (stderr, "The mem_size is: %d\n", mem_size);
 	fprintf (stderr, "The quantum is: %d\n\n\n", quantum);
 
-	run_simulation (processes_to_run, mem_size, quantum);
+	run_simulation (processes_to_run, mem_size, quantum, algorithm_name);
 
 	fprintf(stderr, "\nEnding program...\n\n");
 }

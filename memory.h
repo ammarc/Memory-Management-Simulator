@@ -3,8 +3,12 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <limits.h>
+#include <math.h>
 #include "list.h"
 #include "simulation.h"
+#include "disk.h"
 
 
 typedef struct block Block;
@@ -43,13 +47,13 @@ bool memory_is_full (Memory* memory);
 bool memory_is_empty (Memory* memory);
 
 // adds a process to memory
-void add_to_memory (Memory* memory, void* process, int curr_time, List* in_disk, List* round_robin_queue);
+void add_to_memory (Memory* memory, void* process, int curr_time, List* in_disk, List* round_robin_queue, char* algorithm);
 
 // returns a free hole
 // Block* hole_to_insert (Memory* memory, int process_size);
 
 // checks the memory segments list for contiguous space as the input
-int is_space_available (Memory* memory, int process_size);
+int is_space_available (Memory* memory, int process_size, char* algorithm);
 
 // the function to swap processes out of memory
 Process* process_to_remove (Memory* memory, int curr_time);
@@ -63,5 +67,8 @@ void* fetch_process ();
 void insert_at_address (Memory* memory, int address, Process* process, List* round_robin_queue);
 
 void memory_print (Block* head);
+
+// check whether the input PID is in memory
+bool process_in_memory (Memory* memory, int pid);
 
 #endif

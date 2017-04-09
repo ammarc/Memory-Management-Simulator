@@ -7,10 +7,15 @@
 
 void add_to_disk (List* in_disk, Process* process, int curr_time)
 {
+    fprintf(stderr, "Now adding PID: %d to disk     Arrival time: %d\n", process->process_id, curr_time);
+    if (!process->added_to_disk)
+        process->disk_entry_time = process->time_created;
+    else
+        process->disk_entry_time = curr_time;
     list_add_end(in_disk, process);
+    process->added_to_disk = true;
     // now we need to modify the data of the node we added to set
     // the time the process was in the disk
-    process->disk_entry_time = curr_time;
 }
 
 
@@ -24,12 +29,14 @@ void* remove_from_disk (List* in_disk)
     
     Node* node = in_disk->head;
     // note that a higher priority is denoted by a lower process ID
-    int highest_priority = ((Process *)curr_process_node)->process_id;
-    int current_time = ((Process *)curr_process_node)->time_created;
+    int highest_priority = ((Process *)curr_process_node->data)->process_id;
+    int current_time = ((Process *)curr_process_node->data)->disk_entry_time;
+    fprintf(stderr, "The current time is set at: %d     with highest priority %d\n", current_time, highest_priority);
+    //curr_process
 
     // we need to run a loop that goes through the list
     // if the arrival times for all the processes is the same
-    while (in_disk->size > 1 && current_time == ((Process *)curr_process_node->data)->time_created)
+    while (in_disk->size > 1 && current_time == ((Process *)curr_process_node->next->data)->disk_entry_time)
     {
         if (highest_priority > ((Process *)curr_process_node->next->data)->process_id)
         {
@@ -37,6 +44,8 @@ void* remove_from_disk (List* in_disk)
             max_process_node = curr_process_node->next;
         }
         curr_process_node = curr_process_node->next;
+        if (!curr_process_node->next)
+            break;
     }
 
     // if (max_process_node) {fprintf (stderr, "NULL\n"); }
@@ -48,22 +57,14 @@ void* remove_from_disk (List* in_disk)
         if (((Process *) node->data)->process_id == highest_priority)
         {
             if(node->next)
-            {
                 node->next->back = node->back;
-            }
             else
-            {
                 in_disk->last = node->back;
-            }
 
             if(node->back)
-            {
                 node->back->next = node->next;
-            }
             else
-            {
                 in_disk->head = node->next;
-            }
 
             node->back = NULL;
             node->next = NULL;

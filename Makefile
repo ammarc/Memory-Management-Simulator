@@ -38,6 +38,6 @@ clobber: clean
 
 driver.o:	  simulation.h
 list.o:		  list.h
-simulation.o: simulation.h
-memory.o:     memory.h
-disk.o:       disk.h
+simulation.o: simulation.h list.h
+memory.o:     memory.h list.h
+disk.o:       disk.h list.h

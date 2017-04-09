@@ -65,4 +65,7 @@ bool list_is_empty(List *list);
 // function to print the list
 void list_print (Node* head);
 
+// removes the node from the list given a PID
+void list_remove_process (List* list, int pid);
+
 #endif

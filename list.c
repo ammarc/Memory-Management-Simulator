@@ -186,10 +186,46 @@ void* list_remove_start(List *list)
 	return list_data;
 }
 
+void list_remove_process (List* list, int pid)
+{
+	assert(list != NULL);
+	assert(list->size > 0);
+
+	Node* node = list->head;
+	while (node)
+	{
+		if (((Process *)node->data)->process_id == pid)
+			break;
+		node = node->next;
+	}
+
+	// use already defined functions
+	if (list->head == node)
+	{
+		list_remove_start (list);
+		return;
+	}
+	else if (list->last == node)
+	{
+		list_remove_end (list);
+		return;
+	}
+    
+	// setting the pointers for the neighbours correctly
+	node->next->back = node->back;
+	node->back->next = node->next;
+
+	// the list is now one node smaller
+	list->size--;
+    
+	// and we're finished with the node holding this data
+	free_node(node);
+}
+
 // remove and return the final data element in a list
 // this operation is O(n), where n is the number of elements in the list
 // error if the list is empty (so first ensure list_size() > 0)
-/*
+
 void* list_remove_end(List *list)
 {
 	assert(list != NULL);
@@ -231,7 +267,7 @@ void* list_remove_end(List *list)
 	// done!
 	return list_data;
 }
-*/
+
 // return the number of elements contained in a list
 int list_size(List *list) {
 	assert(list != NULL);
