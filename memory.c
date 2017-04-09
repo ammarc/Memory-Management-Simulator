@@ -1,19 +1,26 @@
+/* Project 1 for COMP30023: Computer Systems
+*  at the University of Melbourne
+*  Semester 1, 2017
+*  by: Ammar Ahmed
+*  Username: ammara
+*/
+
 #include "disk.h"
 #include "memory.h"
+#include <assert.h>
 
 Memory* create_new_memory (int mem_size)
 {
-    // Setting the default values for memory
-    fprintf(stderr, "Creating new memory\n");
+    /* Setting the default values for memory */
     Memory* memory = malloc (sizeof(Memory));
-    memory->total_size = mem_size;// - 1;
+    memory->total_size = mem_size;
     memory->num_holes = 1;
     memory->num_processes = 0;
     memory->size_occupied = 0;
 
-    // initialize the first segment as free
+    /* initialize the first segment as free */
     Block* block = malloc (sizeof(Block));
-    // change this to -1
+
     block->address = mem_size;
     block->size = mem_size;
     block->is_empty = true;
@@ -37,63 +44,59 @@ bool memory_is_empty (Memory* memory)
     return memory->size_occupied == 0;
 }
 
-// given a process, it will be added to the memory
-// (if there isn't enough space, it will be made by swapping)
-void add_to_memory (Memory* memory, void* process, int curr_time, List* in_disk, List* round_robin_queue, char* algorithm)
+/* given a process, it will be added to the memory
+ * (if there isn't enough space, it will be created by swapping) */
+void add_to_memory (Memory* memory, void* process, int curr_time, 
+                    List* in_disk, List* round_robin_queue, char* algorithm)
 {
     int address;
     Process* to_be_removed;
-    double mem_usage;
-    int count = 0;
+    int mem_usage;
 
-    // keep going unless a big enough space is available
-    while (!(address = is_space_available(memory, ((Process *)process)->memory_size, algorithm)))
-    // while (count < 150)
+    /* this loop will run until a big enough block is available */
+    while (!(address = is_space_available(memory, 
+                            ((Process *)process)->memory_size, algorithm)))
     {
-        // fprintf(stderr, "GOOD %d\n", count);
-        // call the swap function here
-        // fprintf(stderr, "Good till now\n");
+        /* this is the process to be swapped out of memory */
         to_be_removed = process_to_remove (memory, curr_time);
-        fprintf (stderr, "The process address to be removed: %d\n", to_be_removed->memory_address);
-        // take the process out from R.R.
-        // take the process out from memory segments and update the boolean
+
         remove_from_memory (memory, to_be_removed, round_robin_queue);
         
-        // transfer to the disk
+        /* the process are then added to disk */
         add_to_disk (in_disk, to_be_removed, curr_time);
-        // fprintf(stderr, "The changed value is: %d\n", address);
-        count++;
     }
 
-    // now we need to modify the data of the block we added to set
-    // the time the process was in the memory
+    /* now we need to modify the data of the process added to memory
+     * with the current time and address */
     ((Process *)process)->memory_entry_time = curr_time;
 
-    // set the address of the process
     ((Process *)process)->memory_address = address;
     
-    // insert the process to the address calculated
     insert_at_address (memory, address, process, round_robin_queue);
 
-    fprintf(stderr, "\n");
-    mem_usage = memory->size_occupied*1.0/memory->total_size*1.0;
-    fprintf(stderr, "Memory usage is is: %f\n", mem_usage);
-    fprintf(stderr, "Memory size is: %d\n", memory->size_occupied);
-    fprintf(stderr, "Memory total size is: %d\n", memory->total_size);
-    fprintf (stdout, "time %d, %d loaded, numprocesses=%d, numholes=%d, memusage=%d%%\n",
-                    curr_time, ((Process *)process)->process_id, memory->num_processes, 
-                            memory->num_holes, (int) ceil(mem_usage*100));
+    /* the percentage is calculated here and floating point numbers
+     * are avoided due to their limitations */
+    mem_usage = ((100 * memory->size_occupied) / memory->total_size) + 
+                            (((100 * memory->size_occupied) % 
+                                        memory->total_size) ? 1 : 0);
+
+    fprintf (stdout, 
+        "time %d, %d loaded, numprocesses=%d, numholes=%d, memusage=%d%%\n",
+                    curr_time, ((Process *)process)->process_id, 
+                            memory->num_processes, 
+                            memory->num_holes, mem_usage);
 }
 
 
-// the following needs to be changed depending upon the input algorithm
-// which is taken from its input
+/* this returns the address of the space available and changes
+ * according to the input its gotten */
 int is_space_available (Memory* memory, int process_size, char* algorithm)
 {
     Block* block;
+    /* this loop compares traverses the memory and returns the 
+     * smallest free hole (which is big enough) and returns */
     if (strcmp (algorithm, "best") == 0)
     {
-        // fprintf(stdout, "running best\n");
         Block* best_block = NULL;
         block = memory->head;
         int best_size = INT_MAX;
@@ -114,6 +117,8 @@ int is_space_available (Memory* memory, int process_size, char* algorithm)
         else
             return 0;
     }
+    /* worst fit is applied here and the biggest hole (which can fit
+     * in the process) is returned */
     else if (strcmp (algorithm, "worst") == 0)
     {
         Block* worst_block = NULL;
@@ -136,7 +141,7 @@ int is_space_available (Memory* memory, int process_size, char* algorithm)
         else
             return 0;
     }
-
+    /* finally if the conditials fail, first fit is applied here */
     block = memory->head;
     while (block)
     {
@@ -147,15 +152,18 @@ int is_space_available (Memory* memory, int process_size, char* algorithm)
     return 0;
 }
 
-
+/* given memory, this function finds the next process to be removed
+ * from the memory */
 Process* process_to_remove (Memory* memory, int curr_time)
-{
-    
+{   
     int longest_wait_time = INT_MIN;
     int highest_priority = INT_MAX;
     Process* longest_process_in_mem;
     Block* block = memory->head;
 
+    /* memory is traversed here and the block with the process that has
+     * been in it the longest is set to be removed. If we find ourselves
+     * in a tie for the longest time, it is broken by priority */
     while (block)
     {
         if (((Block *)block)->is_empty)
@@ -164,14 +172,17 @@ Process* process_to_remove (Memory* memory, int curr_time)
             continue;
         }
 
-        if (curr_time - ((Process *)block->process)->memory_entry_time > longest_wait_time)
+        if (curr_time - ((Process *)block->process)->memory_entry_time > 
+                                                    longest_wait_time)
         {
             highest_priority = ((Process *)block->process)->process_id;
-            longest_wait_time = curr_time - ((Process *)block->process)->memory_entry_time;
+            longest_wait_time = curr_time - ((Process *)block->process)->
+                                                    memory_entry_time;
             longest_process_in_mem = (Process *) block->process;
         }
-        // break ties by priority
-        else if (curr_time - ((Process *)block->process)->memory_entry_time == longest_wait_time)
+        /* break ties by priority */
+        else if (curr_time - ((Process *)block->process)->
+                            memory_entry_time == longest_wait_time)
         {
             if (((Process *)block->process)->process_id < highest_priority)
             {
@@ -184,14 +195,17 @@ Process* process_to_remove (Memory* memory, int curr_time)
     return longest_process_in_mem;
 }
 
-void remove_from_memory (Memory* memory, Process* process, List* round_robin_queue)
+/* given a process, this function removes it from memory and also
+ * from the round robin queue */
+void remove_from_memory (Memory* memory, Process* process, 
+                                        List* round_robin_queue)
 {
     int pid = process->process_id;
     Block* block = memory->head;
     int count = 0;
-    fprintf(stderr, "Now removing process: %d\n", process->process_id);
-    // first let us remove the process from the memory segment list
-    // scan the entire list for the process with pid
+
+    /* memory is traversed and the block with the input process ID is
+     * removed */
     while (block)
     {
         if (!block->is_empty && block->process->process_id == pid)
@@ -203,12 +217,14 @@ void remove_from_memory (Memory* memory, Process* process, List* round_robin_que
             
             memory->num_processes -= 1;            
 
-            // merge with back node
+            /* checking the case where the back node is empty
+             * and if so it is merged */
             if (block->back && block->back->is_empty)
             {
                 count += 1;
                 block->address = block->back->address;
                 block->size += block->back->size;
+
                 // checking for the head
                 if (memory->head == block->back)
                     memory->head = block;
@@ -218,18 +234,18 @@ void remove_from_memory (Memory* memory, Process* process, List* round_robin_que
 
                 Block* node_to_free = block->back;
                 block->back = block->back->back;
-                // free the back node as well
+                
                 free (node_to_free);
             }
 
-            // merge with the next node
+            /* checks with the next node, and if it is empty
+             * it is merged with the current node */
             if (block->next && block->next->is_empty)
             {
                 count += 1;
                 Block* node_to_free = block->next;
                 
                 block->size += block->next->size;
-                // fprintf(stderr, "Next size is: %d\n", block->size);
                 // checking for the head
                 if (memory->last == block->next)
                     memory->last = block;
@@ -242,9 +258,9 @@ void remove_from_memory (Memory* memory, Process* process, List* round_robin_que
                 // free the next node as well
                 free (node_to_free);
             }
-            // this will only be true when both the left and right are merged
+            /* this will only be true when both the left and right are empty
+             * and then the number of holes will increase */
             if (count == 0)
-                // one more hole left as no merge happened
                 memory->num_holes += 1;
             else if (count == 2)
                 // one less hole left
@@ -253,16 +269,16 @@ void remove_from_memory (Memory* memory, Process* process, List* round_robin_que
         }
         block = block->next;
     }
-    // removing from the round robin queue (not sure of this)
     list_remove_process (round_robin_queue, process->process_id);
 }
 
-void insert_at_address (Memory* memory, int address, Process* process, List* round_robin_queue)
+/* given a process it is added at the given address in memory */
+void insert_at_address (Memory* memory, int address, Process* process, 
+                            List* round_robin_queue)
 {
     Block* block = memory->head;
-    // int length = memory->num_holes + memory->num_processes;
-    fprintf (stderr, "Inserting at address %d\n", address);
     
+    /* traverse the memory to find the correct address to insert */
     while (block)
     {
         if (block->address == address)
@@ -272,12 +288,15 @@ void insert_at_address (Memory* memory, int address, Process* process, List* rou
 
             else if (block->size > process->memory_size)
             {
-                // split the free space and make a new block
+                /* split the free space and make a new block */
                 Block* new_block = malloc (sizeof(Block));
 
                 new_block->next = block->next;
+
                 if (block->next)
                     block->next->back = new_block;
+                
+                /* making a new block and inserting it into memory */
                 block->next = new_block;
                 new_block->back = block;
                 new_block->size = block->size - process->memory_size;
@@ -286,7 +305,7 @@ void insert_at_address (Memory* memory, int address, Process* process, List* rou
                 
                 block->size = process->memory_size;
 
-                // check whether the block was the last one
+                /* check whether the block was the last one */
                 if (memory->last == block)
                     memory->last = new_block;
             }
@@ -306,8 +325,8 @@ void memory_print (Block* head)
 {
     if (head)
 	{
-        // if (head->process) { fprintf (stderr, "HEAD FOUND\n"); }
-        fprintf(stderr, "The PID of the process is: %d\n", ((Block *)head)->process->process_id);
+        fprintf(stderr, "The PID of the process is: %d\n", 
+                            ((Block *)head)->process->process_id);
         memory_print(head->next);
     }
 }
@@ -324,4 +343,21 @@ bool process_in_memory (Memory* memory, int pid)
         block = block->next;
     }
     return false;
+}
+
+/* This frees all the nodes in the memory */
+void free_memory (Memory* memory)
+{
+	assert(memory != NULL);
+	// free each node
+	Block *block = memory->head;
+	Block *next;
+	while (block)
+	{
+		next = block->next;
+		free (block);
+		block = next;
+	}
+	// free the list struct itself
+	free(memory);
 }

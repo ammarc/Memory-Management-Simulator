@@ -1,4 +1,8 @@
 /* * * * * * *
+ * Modifications made by: Ammar Ahmed
+ * Username: ammara
+ * (Procured from a friend doing COMP20007 this semester)
+ * 
  * Module for creating and manipulating singly-linked lists of integers
  *
  * created for COMP20007 Design of Algorithms 2017
@@ -19,14 +23,16 @@ typedef struct list List;
 typedef struct node Node;
 
 // a list node points to the next node in the list, and to some data
-struct node {
+struct node
+{
 	Node* next;
 	Node* back;
     void* data;
 };
 
 // a list points to its first and last nodes, and stores its size (num. nodes)
-struct list {
+struct list
+{
 	Node *head;
 	Node *last;
 	int size;
@@ -61,9 +67,6 @@ int list_size(List *list);
 
 // returns whether the list contains no elements (true) or some elements (false)
 bool list_is_empty(List *list);
-
-// function to print the list
-void list_print (Node* head);
 
 // removes the node from the list given a PID
 void list_remove_process (List* list, int pid);

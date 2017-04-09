@@ -1,8 +1,16 @@
+/* Project 1 for COMP30023: Computer Systems
+*  at the University of Melbourne
+*  Semester 1, 2017
+*  by: Ammar Ahmed
+*  Username: ammara
+*/
+
 #ifndef SIMULATION_H
 #define SIMULATION_H
 
 #include <stdbool.h>
 
+/* defining a process struct */
 typedef struct process
 {
 	int time_created;
@@ -23,12 +31,11 @@ typedef struct process
 #include "memory.h"
 #include "disk.h"
 
+/* this runs the core simulation */
+void run_simulation (List* process_list, int mem_size, int quantum, 
+										char* algorithm);
 
-void run_simulation (List* process_list, int mem_size, int quantum, char* algorithm);
-
-void process_copy (Process* src, Process* dest);
-
-// runs the process and return the time to 'jump'
+/* this runs the process and returns the process to deque */
 Process* run_process (List* round_robin_queue, int quantum, Memory* memory);
 
 #endif

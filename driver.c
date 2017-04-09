@@ -1,4 +1,8 @@
-/* ¡Add username and info on all files (see spec)!
+/* Project 1 for COMP30023: Computer Systems
+*  at the University of Melbourne
+*  Semester 1, 2017
+*  by: Ammar Ahmed
+*  Username: ammara
 */
 
 #include "simulation.h"
@@ -6,7 +10,7 @@
 
 extern char *optarg;
 
-int main(int argc, char** argv)
+int main (int argc, char** argv)
 {
 	char input;
 	char* algorithm_name;
@@ -14,59 +18,50 @@ int main(int argc, char** argv)
 	int quantum;
 	FILE* input_file;
 	List* processes_to_run = new_list();
-	
-	fprintf(stderr, "\nStarting program...\n\n");
 
-	// make this into a new function:
+	/** This part of the code was originally put on the LMS and was modified 
+	  * for this assignment */
 	while ((input = getopt(argc, argv, "f:a:m:q:")) != EOF)
 	{
+		/* This is the process that will be used through out the simulation */
 		Process* process_data_input = malloc(sizeof(Process));
-
 		switch (input)
 		{
 			case 'f':
 				input_file = fopen (optarg, "r");
-				while (fscanf(input_file, "%d %d %d %d", &process_data_input->time_created, 
+				/* Looping till the end of the file while initializing the 
+				 * process fromt the input data read */
+				while (fscanf(input_file, "%d %d %d %d", &process_data_input->
+															time_created, 
 												&process_data_input->process_id, 
-												&process_data_input->memory_size, 
+												&process_data_input->memory_size,
 												&process_data_input->time_remaining)!=EOF)
 				{
 					process_data_input->added_to_disk = false;
 					list_add_end(processes_to_run, process_data_input);
-					// Now that a node in the list points to this struct
-					// we need to allocate a different chunk of memory
+					/* Allocating memory for the next process */
 					process_data_input = malloc(sizeof(Process));
 				}
  				break;
            
 			case 'a':
-				// set the value of size (int value) based on optarg
 				algorithm_name = optarg;
 				break;
 
 			case 'm':
-				// set the value of size (int value) based on optarg
 				mem_size = atoi(optarg);
 				break;
 
 			case 'q':
-				// set the value of size (int value) based on optarg
 				quantum = atoi(optarg);
 				break;
 
 			default:
-				// do something
 				break;
 		}
-
+		/* Freeing the lingering unused memory allocation when reading 
+		 * with the -f option */
 		free (process_data_input);
 	}
-
-	fprintf(stderr, "Applying algorithm: %s\n", algorithm_name);
-	fprintf (stderr, "The mem_size is: %d\n", mem_size);
-	fprintf (stderr, "The quantum is: %d\n\n\n", quantum);
-
 	run_simulation (processes_to_run, mem_size, quantum, algorithm_name);
-
-	fprintf(stderr, "\nEnding program...\n\n");
 }

@@ -1,9 +1,13 @@
 /* * * * * * *
+ * Modifications made by: Ammar Ahmed
+ * Username: ammara
+ * (Procured from a friend doing COMP20007 this semester)
+ * 
  * Module for creating and manipulating singly-linked lists of integers
+ * (which was modified for a doubly-linked list)
  *
  * created for COMP20007 Design of Algorithms 2017
  * by Matt Farrugia <matt.farrugia@unimelb.edu.au>
- * (Procured from a friend doing COMP20007 this semester)
  */
 
 #include <stdlib.h>
@@ -26,7 +30,8 @@ void free_node(Node *node);
  */
 
 // create a new list and return a pointer to it
-List *new_list() {
+List *new_list()
+{
 	List *list = malloc(sizeof *list);
 	assert(list);
 	
@@ -38,12 +43,14 @@ List *new_list() {
 }
 
 // destroy a list and free its memory
-void free_list(List *list) {
+void free_list(List *list)
+{
 	assert(list != NULL);
 	// free each node
 	Node *node = list->head;
 	Node *next;
-	while (node) {
+	while (node)
+	{
 		next = node->next;
 		free_node(node);
 		node = next;
@@ -67,52 +74,6 @@ void free_node(Node *node)
 	free(node);
 }
 
-// add an element to the front of a list
-// this operation is O(1)
-/*
-void list_add_start(List *list, void* data)
-{
-	assert(list);
-    
-	// create and initialise a new list node
-	Node *node = new_node();
-    
-	node->data = data;
-
-	node->next = list->head;
-    
-    node->back = NULL;
-    
-    // if the list is empty then add a new node to the head
-    if (list->head == NULL)
-    {
-        list->head = new_node();
-    }
-
-    // seg fault down here:
-    // fprintf(stderr, "Head's back is: %p\n\n", list->head);
-    // list->head->back = node;
-    // fprintf(stderr, "Good uptill now ...\n\n");
-    // next will be the old first node (may be null)
-
-	// place it at the start of the list
-	list->head = node;
-
-	// if list was empty, this new node is also the last node now
-    // modified for the doubly linked list
-	if(list->size == 0)
-    {
-		list->last = node;
-	}
-    else
-    {
-        list->head->back = node;
-    }
-
-	// and we need to keep size updated!
-	list->size++;
-}
-*/
 
 // add an element to the back of a list
 // this operation is O(1)
@@ -186,11 +147,13 @@ void* list_remove_start(List *list)
 	return list_data;
 }
 
+// function added by me to remove a node given a Process ID
 void list_remove_process (List* list, int pid)
 {
 	assert(list != NULL);
 	assert(list->size > 0);
 
+	// traversing the list to find the node with the correct PID
 	Node* node = list->head;
 	while (node)
 	{
@@ -225,7 +188,7 @@ void list_remove_process (List* list, int pid)
 // remove and return the final data element in a list
 // this operation is O(n), where n is the number of elements in the list
 // error if the list is empty (so first ensure list_size() > 0)
-
+// (modified to accomodate for a doubly-linked list)
 void* list_remove_end(List *list)
 {
 	assert(list != NULL);
@@ -269,41 +232,15 @@ void* list_remove_end(List *list)
 }
 
 // return the number of elements contained in a list
-int list_size(List *list) {
+int list_size(List *list)
+{
 	assert(list != NULL);
 	return list->size;
 }
 
 // returns whether the list contains no elements (true) or some elements (false)
-bool list_is_empty(List *list) {
+bool list_is_empty(List *list)
+{
 	assert(list != NULL);
 	return (list->size==0);
 }
-
-
-/* Code for removing all the nodes from the list and printing them
-fprintf(stderr, "\nNow printing the list:\n");
-int curr_list_length = list_size(processes_to_run);
-for (int i = 0; i < curr_list_length; i++)
-{
-	fprintf(stderr, "Process time is: %d\n", * (int *) list_remove_start(processes_to_run));
-}
-fprintf(stderr, "......................\n\n");
-*/
-
-/* Printing the list */
-void list_print (Node* head)
-{
-    if (head)
-	{
-        fprintf(stderr, "The PID of the process is: %d\n", ((Process *) head->data)->process_id);
-        list_print(head->next);
-    }
-}
-
-/*
-void delete_node (List* list, int p_id)
-{
-	// search from head and compare PID
-}
-*/
