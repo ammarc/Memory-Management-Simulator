@@ -125,7 +125,6 @@ void* list_remove_start(List *list)
 	list_data = list->head->data;
 
 	list->head = list->head->next;
-    
 
 	// if this was the last node in the list, the last also needs to be cleared
 	if(list->size == 1)

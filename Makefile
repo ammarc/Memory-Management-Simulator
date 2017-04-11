@@ -1,16 +1,12 @@
-# 
-# Sample Makefile for project 1 
-#
-# The program used for illustration purposes is
-# a simple program using prime numbers
+#  Project 1 for COMP30023: Computer Systems
+#  at the University of Melbourne
+#  Semester 1, 2017
+#  by: Ammar Ahmed
+#  Username: ammara
 #
 
-
-## CC  = Compiler.
-## CFLAGS = Compiler flags.
 CC = gcc
 CFLAGS = -Wall -Wextra -std=gnu99
-
 
 ## OBJ = Object files.
 ## SRC = Source files.
@@ -30,12 +26,10 @@ clean:
 	rm $(OBJ) 
 
 ## Clobber: Performs Clean and removes executable file.
-
 clobber: clean
 	rm $(EXE) 
 
 ## Dependencies
-
 driver.o:	  simulation.h
 list.o:		  list.h
 simulation.o: simulation.h list.h
