@@ -7,6 +7,7 @@ three different algorithms:
 * First fit
 * Best fit
 * Worst fit
+
 When needed, it swaps processes out to create a sufficiently large hole
 for a new process to come into memory. It also takes care of scheduling
 processes using a Round Robin algorithm.
