@@ -17,7 +17,7 @@ The format of `input.txt` is rows of tuples, with each containing
 
 Command line arguments used:
 ```
-./swap -f <filename> -a <algorithm> -m <memsize>-q <quantum>
+./swap -f <filename> -a <algorithm> -m <memsize> -q <quantum>
 ```
 where
 * _filename_ refers to the file containing the input processes
